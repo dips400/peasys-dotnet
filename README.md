@@ -83,8 +83,8 @@ Run all tests from the `src/PeasysTests` directory:
 dotnet test
 ```
 
-The library uses [`dotnet-format`][dotnet-format] for code formatting. Code
-must be formatted before PRs are submitted, otherwise CI will fail. Run the
+The library uses [`dotnet-format`](https://github.com/dotnet/format) for code formatting. Code
+must be formatted before PRs are submitted. Run the
 formatter with:
 
 ```sh
