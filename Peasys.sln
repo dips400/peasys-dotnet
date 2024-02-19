@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Peasys", "Peasys\Peasys.csproj", "{2A6DD027-B219-4C81-889D-55C25AF9DCBA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{79C2DE59-EC7C-47E4-8085-D710A244B593}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{2578AD8D-E929-4F5C-80F9-6B5D3D8E5A3A}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE.txt = LICENSE.txt
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2A6DD027-B219-4C81-889D-55C25AF9DCBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A6DD027-B219-4C81-889D-55C25AF9DCBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A6DD027-B219-4C81-889D-55C25AF9DCBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A6DD027-B219-4C81-889D-55C25AF9DCBA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2A6DD027-B219-4C81-889D-55C25AF9DCBA} = {79C2DE59-EC7C-47E4-8085-D710A244B593}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EE6F1EB5-3A92-4FC7-A2FC-10675A686E32}
+	EndGlobalSection
+EndGlobal
