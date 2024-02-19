@@ -7,18 +7,19 @@ The official [Peasys][dips400] .NET library, supporting .NET Standard 6.0+
 
 ## Installation
 
-Using the [.NET Core command-line interface (CLI) tools][dotnet-core-cli-tools]:
+Using the [.NET Core command-line interface (CLI) tools](https://learn.microsoft.com/en-us/dotnet/core/tools/):
 
 ```sh
 dotnet add package Peasys
 ```
 
-Using the [NuGet Command Line Interface (CLI)][nuget-cli]:
+Using the [NuGet Command Line Interface (CLI)](https://learn.microsoft.com/en-us/nuget/reference/nuget-exe-cli-reference?tabs=windows).
 
 ```sh
 nuget install Peasys
+```
 
-Using the [Package Manager Console][package-manager-console]:
+Using the [Package Manager Console](https://learn.microsoft.com/en-us/nuget/consume-packages/install-use-packages-powershell):
 
 ```powershell
 Install-Package Peasys
