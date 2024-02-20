@@ -31,7 +31,7 @@ From within Visual Studio:
 2. Right-click on a project within your solution.
 3. Click on *Manage NuGet Packages...*
 4. Click on the *Browse* tab and search for "Peasys".
-5. Click on the Stripe.net package, select the appropriate version in the
+5. Click on the Peasys package, select the appropriate version in the
    right-tab and click *Install*.
 
 ## Documentation
@@ -45,8 +45,6 @@ For a comprehensive list of examples, check out the [documentation](https://dips
 Peasys is a tool used along a license that should be found on the [dips400](https://dips400.com) website. This license key is required for the use of the service Peasys.
 
 ### Connexion to the server
-
-Stripe authenticates API requests using your account’s secret key, which you can find in the Stripe Dashboard. By default, secret keys can be used to perform any API request without restriction.
 
 ``` C#
 PeaClient conn = new PeaClient("PARITION_NAME", PORT, "USERNAME", "PASSWORD", "FUTUR_LICENSE_KEY");
