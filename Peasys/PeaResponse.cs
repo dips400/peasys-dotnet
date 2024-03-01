@@ -212,6 +212,7 @@
         /// <summary>
         /// Initialize a new instance of the <see cref="ColumnInfo"/> class.
         /// </summary>
+        /// <param name="columnName">Name of the column.</param> 
         /// <param name="ordinalPosition">Ordinal position of the column.</param>
         /// <param name="dataType">DB2 Type of the data contain in the column.</param>
         /// <param name="length">Length of the data contain in the column.</param>

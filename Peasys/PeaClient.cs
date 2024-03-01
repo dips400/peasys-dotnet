@@ -35,8 +35,9 @@ namespace Peasys
         /// <param name="userName">Username of the AS/400 profile used for connexion.</param>
         /// <param name="password">Password of the AS/400 profile used for connexion.</param>
         /// <param name="licenseKey">License key delivered by DIPS after subscription.</param>
+        /// <param name="retreiveStatistics">Set to true if you want the statistics of the license key use to be collect.</param>
         /// <exception cref="PeaInvalidCredentialsException">Exception thrown when <param name="userName"> and/or <param name="password"> are wrong.</exception>
-        /// <exception cref="PeaConnexionException">Exception thrown when the client was not able to succefully connect to the server.</exception>
+        /// <exception cref="PeaConnexionException">Exception thrown when the client was not able to successfully connect to the server.</exception>
         public PeaClient(string partitionName, int port, string userName, string password, string licenseKey, bool retreiveStatistics)
         {
             if (string.IsNullOrEmpty(partitionName) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(licenseKey))
@@ -64,7 +65,7 @@ namespace Peasys
             {
                 httpClient = new()
                 {
-                    BaseAddress = new Uri("http://localhost:8080"), // TO be changed when deployed
+                    BaseAddress = new Uri("https://dips400.com"), // TO be changed when deployed
                 };
 
                 using HttpResponseMessage response = httpClient.GetAsync($"api/license-key/retrieve-token/{partitionName}/{licenseKey}").Result;
@@ -111,7 +112,7 @@ namespace Peasys
             switch (ConnectionStatus)
             {
                 case 1:
-                    SendStatistics(new ConnexionUpdate(UserName, DateTime.Now, LicenseKey));
+                    SendStatistics(new ConnexionUpdate(UserName, LicenseKey));
                     ConnectionMessage = "Connected";
                     break;
                 case 2:
@@ -135,13 +136,13 @@ namespace Peasys
         /// <summary>
         /// Sends the SELECT SQL query to the server that execute it and retrieve the desired data.
         /// </summary>
-        /// <param name="query">SQL query that should starts with the SELECT keyword.</param>
+        /// <param name="query">SQL query that should start with the SELECT keyword.</param>
         /// <returns>Returns a <see cref="PeaSelectResponse"/> object, further used to exploit data.</returns>
         /// <exception cref="PeaInvalidSyntaxQueryException">Thrown if the query syntax is invalid.</exception>
         public PeaSelectResponse ExecuteSelect(string query)
         {
             if (string.IsNullOrEmpty(query)) throw new PeaInvalidSyntaxQueryException("Query should not be either null or empty");
-            if (!query.ToUpper().StartsWith("SELECT")) throw new PeaInvalidSyntaxQueryException("Query should starts with the SELECT SQL keyword");
+            if (!query.ToUpper().StartsWith("SELECT")) throw new PeaInvalidSyntaxQueryException("Query should start with the SELECT SQL keyword");
 
             (Dictionary<string, List<dynamic>> Result, string[] ColumnsName, int RowCount, string ReturnedSQLState, string ReturnedSQLMessage) = BuildData(query);
 
@@ -151,13 +152,13 @@ namespace Peasys
         /// <summary>
         /// Sends the UPDATE SQL query to the server that execute it and retrieve the desired data.
         /// </summary>
-        /// <param name="query">SQL query that should starts with the UPDATE keyword.</param>
+        /// <param name="query">SQL query that should start with the UPDATE keyword.</param>
         /// <returns>Returns a <see cref="PeaUpdateResponse"/> object, further used to exploit data.</returns>
         /// <exception cref="PeaInvalidSyntaxQueryException">Thrown if the query syntax is invalid.</exception>
         public PeaUpdateResponse ExecuteUpdate(string query)
         {
             if (string.IsNullOrEmpty(query)) throw new PeaInvalidSyntaxQueryException("Query should not be either null or empty");
-            if (!query.ToUpper().StartsWith("UPDATE")) throw new PeaInvalidSyntaxQueryException("Query should starts with the UPDATE SQL keyword");
+            if (!query.ToUpper().StartsWith("UPDATE")) throw new PeaInvalidSyntaxQueryException("Query should start with the UPDATE SQL keyword");
 
             (int row_count, string SqlState, string SqlMessage) = ModifyTable(query);
             bool has_succeeded = SqlState == "00000" || SqlState == "01504";
@@ -168,13 +169,13 @@ namespace Peasys
         /// <summary>
         /// Sends the CREATE SQL query to the server that execute it and retrieve the desired data.
         /// </summary>
-        /// <param name="query">SQL query that should starts with the CREATE keyword.</param>
+        /// <param name="query">SQL query that should start with the CREATE keyword.</param>
         /// <returns>Returns a <see cref="PeaCreateResponse"/> object, further used to exploit data.</returns>
         /// <exception cref="PeaInvalidSyntaxQueryException">Thrown if the query syntax is invalid.</exception>
         public PeaCreateResponse ExecuteCreate(string query)
         {
             if (string.IsNullOrEmpty(query)) throw new PeaInvalidSyntaxQueryException("Query should not be either null or empty");
-            if (!query.ToUpper().StartsWith("CREATE")) throw new PeaInvalidSyntaxQueryException("Query should starts with the CREATE SQL keyword");
+            if (!query.ToUpper().StartsWith("CREATE")) throw new PeaInvalidSyntaxQueryException("Query should start with the CREATE SQL keyword");
 
             (_, string SqlState, string SqlMessage) = ModifyTable(query);
 
@@ -199,13 +200,13 @@ namespace Peasys
         /// <summary>
         /// Sends the DELETE SQL query to the server that execute it and retrieve the desired data.
         /// </summary>
-        /// <param name="query">SQL query that should starts with the DELETE keyword.</param>
+        /// <param name="query">SQL query that should start with the DELETE keyword.</param>
         /// <returns>Returns a <see cref="PeaDeleteResponse"/> object, further used to exploit data.</returns>
         /// <exception cref="PeaInvalidSyntaxQueryException">Thrown if the query syntax is invalid.</exception>
         public PeaDeleteResponse ExecuteDelete(string query)
         {
             if (string.IsNullOrEmpty(query)) throw new PeaInvalidSyntaxQueryException("Query should not be either null or empty");
-            if (!query.ToUpper().StartsWith("DELETE")) throw new PeaInvalidSyntaxQueryException("Query should starts with the DELETE SQL keyword");
+            if (!query.ToUpper().StartsWith("DELETE")) throw new PeaInvalidSyntaxQueryException("Query should start with the DELETE SQL keyword");
 
             (int row_count, string SqlState, string SqlMessage) = ModifyTable(query);
 
@@ -215,13 +216,13 @@ namespace Peasys
         /// <summary>
         /// Sends the ALTER SQL query to the server that execute it and retrieve the desired data.
         /// </summary>
-        /// <param name="query">SQL query that should starts with the ALTER keyword.</param>
+        /// <param name="query">SQL query that should start with the ALTER keyword.</param>
         /// <returns>Returns a <see cref="PeaAlterResponse"/> object, further used to exploit data.</returns>
         /// <exception cref="PeaInvalidSyntaxQueryException">Thrown if the query syntax is invalid.</exception>
         public PeaAlterResponse ExecuteAlter(string query, bool retreiveTableSchema)
         {
             if (string.IsNullOrEmpty(query)) throw new PeaInvalidSyntaxQueryException("Query should not be either null or empty");
-            if (!query.ToUpper().StartsWith("ALTER")) throw new PeaInvalidSyntaxQueryException("Query should starts with the ALTER SQL keyword");
+            if (!query.ToUpper().StartsWith("ALTER")) throw new PeaInvalidSyntaxQueryException("Query should start with the ALTER SQL keyword");
 
             (_, string SqlState, string SqlMessage) = ModifyTable(query);
 
@@ -239,13 +240,13 @@ namespace Peasys
         /// <summary>
         /// Sends the DROP SQL query to the server that execute it and retrieve the desired data.
         /// </summary>
-        /// <param name="query">SQL query that should starts with the DROP keyword.</param>
+        /// <param name="query">SQL query that should start with the DROP keyword.</param>
         /// <returns>Returns a <see cref="PeaDropResponse"/> object, further used to exploit data.</returns>
         /// <exception cref="PeaInvalidSyntaxQueryException">Thrown if the query syntax is invalid.</exception>
         public PeaDropResponse ExecuteDrop(string query)
         {
             if (string.IsNullOrEmpty(query)) throw new PeaInvalidSyntaxQueryException("Query should not be either null or empty");
-            if (!query.ToUpper().StartsWith("DROP")) throw new PeaInvalidSyntaxQueryException("Query should starts with the DROP SQL keyword");
+            if (!query.ToUpper().StartsWith("DROP")) throw new PeaInvalidSyntaxQueryException("Query should start with the DROP SQL keyword");
 
             (_, string SqlState, string SqlMessage) = ModifyTable(query);
 
@@ -255,13 +256,13 @@ namespace Peasys
         /// <summary>
         /// Sends the INSERT SQL query to the server that execute it and retrieve the desired data.
         /// </summary>
-        /// <param name="query">SQL query that should starts with the INSERT keyword.</param>
+        /// <param name="query">SQL query that should start with the INSERT keyword.</param>
         /// <returns>Returns a <see cref="PeaInsertResponse"/> object, further used to exploit data.</returns>
         /// <exception cref="PeaInvalidSyntaxQueryException">Thrown if the query syntax is invalid.</exception>
         public PeaInsertResponse ExecuteInsert(string query)
         {
             if (string.IsNullOrEmpty(query)) throw new PeaInvalidSyntaxQueryException("Query should not be either null or empty");
-            if (!query.ToUpper().StartsWith("INSERT")) throw new PeaInvalidSyntaxQueryException("Query should starts with the INSERT SQL keyword");
+            if (!query.ToUpper().StartsWith("INSERT")) throw new PeaInvalidSyntaxQueryException("Query should start with the INSERT SQL keyword");
 
             (int row_count, string SqlState, string SqlMessage) = ModifyTable(query);
 
@@ -353,8 +354,8 @@ namespace Peasys
             string header = RetreiveData(cmd1);
 
             ArrayList list_name = new(), list_type = new(), list_prec = new(), list_scal = new();
-            string SqlState = "";
-            string SqlMessage = "";
+            string SqlState = "00000";
+            string SqlMessage = "Select query correctly executed";
             try
             {
                 JArray a = JArray.Parse(header);
@@ -410,8 +411,9 @@ namespace Peasys
 
             if (RetreiveStatistics)
             {
-                SendStatistics(new DataUpdate("data_in", Asen.GetByteCount(query), DateTime.Now, LicenseKey));
-                SendStatistics(new DataUpdate("data_out", Asen.GetByteCount(data), DateTime.Now, LicenseKey));
+                SendStatistics(new DataUpdate("data_in", Asen.GetByteCount(query), LicenseKey));
+                SendStatistics(new DataUpdate("data_out", Asen.GetByteCount(data), LicenseKey));
+                SendStatistics(new LogUpdate("log", this.UserName, query.Split(' ')[0], SqlState, SqlMessage, LicenseKey));
             }
 
             int nb_row = data.Length / sum_precision;
@@ -475,14 +477,16 @@ namespace Peasys
             string cmd1 = "updt" + query + EndPack;
             string header = RetreiveData(cmd1);
 
-            if (RetreiveStatistics)
-            {
-                SendStatistics(new DataUpdate("data_in", Asen.GetByteCount(query), DateTime.Now, LicenseKey));
-                SendStatistics(new DataUpdate("data_out", Asen.GetByteCount(header), DateTime.Now, LicenseKey));
-            }
-
             string SqlState = header.Substring(1, 5);
             string SqlMessage = header[6..].Trim();
+
+            if (RetreiveStatistics)
+            {
+                SendStatistics(new DataUpdate("data_in", Asen.GetByteCount(query), LicenseKey));
+                SendStatistics(new DataUpdate("data_out", Asen.GetByteCount(header), LicenseKey));
+                SendStatistics(new LogUpdate("log", this.UserName, query.Split(' ')[0], SqlState, SqlMessage, LicenseKey));
+            }
+
             int row_count = 0;
             if (query.ToUpper().StartsWith("INSERT") || query.ToUpper().StartsWith("UPDATE") || query.ToUpper().StartsWith("DELETE"))
             {
@@ -571,7 +575,6 @@ namespace Peasys
             }
 
             string data = RetreiveData("getd" + query + EndPack);
-            Console.WriteLine("===> data : " + data);
 
             List<List<dynamic>> result = new();
             int pointer = 0;
@@ -612,19 +615,17 @@ namespace Peasys
         private void SendStatistics(Object data)
         {
             string output = JsonConvert.SerializeObject(data);
-            _ = httpClient.PostAsync($"api/license-key/update", new StringContent(output, Encoding.UTF8, "application/json"));
+            _ = httpClient.PostAsync($"api/license-key/update", new StringContent(output, Encoding.UTF8, "application/json")).Result;
         }
 
         private class ConnexionUpdate
         {
             public string Name;
-            public DateTime Date;
             public string Key;
 
-            public ConnexionUpdate(string name, DateTime date, string key)
+            public ConnexionUpdate(string name, string key)
             {
                 Name = name;
-                Date = date;
                 Key = key;
             }
         }
@@ -633,14 +634,31 @@ namespace Peasys
         {
             public string Name;
             public int Bytes;
-            public DateTime Date;
             public string Key;
 
-            public DataUpdate(string name, int bytes, DateTime date, string key)
+            public DataUpdate(string name, int bytes, string key)
             {
                 Name = name;
-                Bytes = bytes;
-                Date = date;
+                Key = key;
+            }
+        }
+
+        private class LogUpdate
+        {
+            public string Name;
+            public string UserName;
+            public string Query;
+            public string SqlCode;
+            public string SqlMessage;
+            public string Key;
+
+            public LogUpdate(string name, string username, string query, string sqlCode, string sqlMessage, string key)
+            {
+                Name = name;
+                UserName = username;
+                Query = query;
+                SqlCode = sqlCode;
+                SqlMessage = sqlMessage;
                 Key = key;
             }
         }
