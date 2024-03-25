@@ -12,18 +12,19 @@ namespace Peasys
     /// </summary>
     public class PeaClient
     {
-        public readonly string LicenseKey;
+        public readonly string IdClient;
         public readonly string PartitionName;
-        public readonly bool RetreiveStatistics;
+        public readonly bool RetrieveStatistics;
         public readonly string UserName;
         public readonly int Port;
+        public readonly bool OnlineVersion;
         public readonly string ConnectionMessage;
         public readonly int ConnectionStatus;
 
         private readonly NetworkStream Stream;
         private readonly TcpClient TcpClient = new();
         private readonly string EndPack = "dipsjbiemg";
-        private readonly HttpClient httpClient;
+        private readonly HttpClient? httpClient;
 
         public readonly static Encoding Asen = Encoding.GetEncoding("ISO-8859-1");
 
@@ -35,12 +36,13 @@ namespace Peasys
         /// <param name="userName">Username of the AS/400 profile used for connexion.</param>
         /// <param name="password">Password of the AS/400 profile used for connexion.</param>
         /// <param name="licenseKey">License key delivered by DIPS after subscription.</param>
-        /// <param name="retreiveStatistics">Set to true if you want the statistics of the license key use to be collect.</param>
+        /// <param name="onlineVersion">Set to true if you want to use the online version of Peasys (<see cref="https://dips400.com/docs/connexion"/>).</param>
+        /// <param name="retrieveStatistics">Set to true if you want the statistics of the license key use to be collect.</param>
         /// <exception cref="PeaInvalidCredentialsException">Exception thrown when <param name="userName"> and/or <param name="password"> are wrong.</exception>
         /// <exception cref="PeaConnexionException">Exception thrown when the client was not able to successfully connect to the server.</exception>
-        public PeaClient(string partitionName, int port, string userName, string password, string licenseKey, bool retreiveStatistics)
+        public PeaClient(string partitionName, int port, string userName, string password, string idClient, bool onlineVersion, bool retrieveStatistics)
         {
-            if (string.IsNullOrEmpty(partitionName) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(licenseKey))
+            if (string.IsNullOrEmpty(partitionName) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(idClient))
             {
                 throw new PeaInvalidCredentialsException("Parameters of the PeaClient should not be either null or empty");
             }
@@ -55,52 +57,51 @@ namespace Peasys
             PartitionName = partitionName;
             Port = port;
             UserName = userName;
-            LicenseKey = licenseKey;
-            RetreiveStatistics = retreiveStatistics;
+            IdClient = idClient;
+            OnlineVersion = onlineVersion;
+            RetrieveStatistics = retrieveStatistics;
 
-            // Retrieve token
-            bool IsValid = true;
-            string Token = "";
-            try
+            // retrieve connexion token online
+            string token = "pldgchjtsxlqyfucjstpldgchjcjstemzplfpldgchjtsxlqyfucjstemzplfutysnchqternoutysnchqternoemzplfutysnchqterno";
+            if (onlineVersion)
             {
-                httpClient = new()
+                try
                 {
-                    BaseAddress = new Uri("https://dips400.com"), // TO be changed when deployed
-                };
+                    httpClient = new()
+                    {
+                        BaseAddress = new Uri("https://dips400.com"), // TO be changed when deployed
+                    };
 
-                using HttpResponseMessage response = httpClient.GetAsync($"api/license-key/retrieve-token/{partitionName}/{licenseKey}").Result;
+                    using HttpResponseMessage response = httpClient.GetAsync($"api/license-key/retrieve-token/{partitionName}/{idClient}").Result;
 
-                var jsonResponse = response.Content.ReadAsStringAsync().Result;
+                    var jsonResponse = response.Content.ReadAsStringAsync().Result;
 
-                JObject jsonObject = JObject.Parse(jsonResponse);
-                IsValid = (bool)jsonObject.GetValue("isValid");
-                Token = (string)jsonObject.GetValue("token");
+                    JObject jsonObject = JObject.Parse(jsonResponse);
+                    bool IsValid = (bool)jsonObject.GetValue("isValid");
+                    token = (string)jsonObject.GetValue("token");
 
-                if (!IsValid)
-                {
-                    throw new PeaInvalidLicenseKeyException("Your subscription is not valid, visit TODO for more information.");
+                    if (!IsValid)
+                    {
+                        throw new PeaInvalidLicenseKeyException("Your subscription is not valid, visit TODO for more information.");
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new PeaConnexionException("Exception during license key check process", ex);
+                catch (Exception ex)
+                {
+                    throw new PeaConnexionException("Exception during license key check process", ex);
+                }
             }
 
             try
             {
                 TcpClient.Connect(partitionName, port);
+                Stream = TcpClient.GetStream();
             }
             catch (Exception ex)
             {
                 throw new PeaConnexionException("Error connecting the TCP client", ex);
             }
-            Stream = TcpClient.GetStream();
 
-
-            // ADD TOKEN 
-            string login = userName.PadRight(10);
-
-            login += password.PadRight(10);
+            string login = userName.PadRight(10) + token.PadRight(100) + password; // password padding to be redefined
 
             byte[] ba = Asen.GetBytes(login);
             Stream.Write(ba, 0, ba.Length);
@@ -112,7 +113,7 @@ namespace Peasys
             switch (ConnectionStatus)
             {
                 case 1:
-                    SendStatistics(new ConnexionUpdate(UserName, LicenseKey));
+                    if(onlineVersion) SendStatistics(new ConnexionUpdate(userName, idClient, partitionName));
                     ConnectionMessage = "Connected";
                     break;
                 case 2:
@@ -130,7 +131,6 @@ namespace Peasys
                 default:
                     throw new PeaConnexionException("Exception during connexion process, contact us for more informations");
             }
-
         }
 
         /// <summary>
@@ -409,11 +409,11 @@ namespace Peasys
 
             string data = RetreiveData(cmd2);
 
-            if (RetreiveStatistics)
+            if (RetrieveStatistics)
             {
-                SendStatistics(new DataUpdate("data_in", Asen.GetByteCount(query), LicenseKey));
-                SendStatistics(new DataUpdate("data_out", Asen.GetByteCount(data), LicenseKey));
-                SendStatistics(new LogUpdate("log", this.UserName, query.Split(' ')[0], SqlState, SqlMessage, LicenseKey));
+                SendStatistics(new DataUpdate("data_in", Asen.GetByteCount(query), IdClient, PartitionName));
+                SendStatistics(new DataUpdate("data_out", Asen.GetByteCount(data), IdClient, PartitionName));
+                SendStatistics(new LogUpdate("log", this.UserName, query.Split(' ')[0], SqlState, SqlMessage, IdClient, PartitionName));
             }
 
             int nb_row = data.Length / sum_precision;
@@ -479,12 +479,12 @@ namespace Peasys
 
             string SqlState = header.Substring(1, 5);
             string SqlMessage = header[6..].Trim();
-
-            if (RetreiveStatistics)
+                
+            if (RetrieveStatistics)
             {
-                SendStatistics(new DataUpdate("data_in", Asen.GetByteCount(query), LicenseKey));
-                SendStatistics(new DataUpdate("data_out", Asen.GetByteCount(header), LicenseKey));
-                SendStatistics(new LogUpdate("log", this.UserName, query.Split(' ')[0], SqlState, SqlMessage, LicenseKey));
+                SendStatistics(new DataUpdate("data_in", Asen.GetByteCount(query), IdClient, PartitionName));
+                SendStatistics(new DataUpdate("data_out", Asen.GetByteCount(header), IdClient, PartitionName));
+                SendStatistics(new LogUpdate("log", this.UserName, query.Split(' ')[0], SqlState, SqlMessage, IdClient, PartitionName));
             }
 
             int row_count = 0;
@@ -615,18 +615,20 @@ namespace Peasys
         private void SendStatistics(Object data)
         {
             string output = JsonConvert.SerializeObject(data);
-            _ = httpClient.PostAsync($"api/license-key/update", new StringContent(output, Encoding.UTF8, "application/json")).Result;
+            _ = httpClient.PatchAsync($"api/license-key/update", new StringContent(output, Encoding.UTF8, "application/json")).Result;
         }
 
         private class ConnexionUpdate
         {
             public string Name;
-            public string Key;
+            public string IdClient;
+            public string PartitionName;
 
-            public ConnexionUpdate(string name, string key)
+            public ConnexionUpdate(string name, string idClient, string partitionName)
             {
                 Name = name;
-                Key = key;
+                IdClient = idClient;
+                PartitionName = partitionName;
             }
         }
 
@@ -634,12 +636,14 @@ namespace Peasys
         {
             public string Name;
             public int Bytes;
-            public string Key;
+            public string IdClient;
+            public string PartitionName;
 
-            public DataUpdate(string name, int bytes, string key)
+            public DataUpdate(string name, int bytes, string idClient, string partitionName)
             {
                 Name = name;
-                Key = key;
+                IdClient = idClient;
+                PartitionName = partitionName;
             }
         }
 
@@ -650,16 +654,18 @@ namespace Peasys
             public string Query;
             public string SqlCode;
             public string SqlMessage;
-            public string Key;
+            public string IdClient;
+            public string PartitionName;
 
-            public LogUpdate(string name, string username, string query, string sqlCode, string sqlMessage, string key)
+            public LogUpdate(string name, string username, string query, string sqlCode, string sqlMessage, string idClient, string partitionName)
             {
                 Name = name;
                 UserName = username;
                 Query = query;
                 SqlCode = sqlCode;
                 SqlMessage = sqlMessage;
-                Key = key;
+                IdClient = idClient;
+                PartitionName = partitionName;
             }
         }
     }
