@@ -35,23 +35,16 @@ namespace Peasys
         /// <param name="port">Port used for the data exchange between the client and the server.</param>
         /// <param name="userName">Username of the AS/400 profile used for connexion.</param>
         /// <param name="password">Password of the AS/400 profile used for connexion.</param>
-        /// <param name="licenseKey">License key delivered by DIPS after subscription.</param>
+        /// <param name="idClient">ID of the client account on the DIPS website.</param>
         /// <param name="onlineVersion">Set to true if you want to use the online version of Peasys (<see cref="https://dips400.com/docs/connexion"/>).</param>
         /// <param name="retrieveStatistics">Set to true if you want the statistics of the license key use to be collect.</param>
         /// <exception cref="PeaInvalidCredentialsException">Exception thrown when <param name="userName"> and/or <param name="password"> are wrong.</exception>
         /// <exception cref="PeaConnexionException">Exception thrown when the client was not able to successfully connect to the server.</exception>
         public PeaClient(string partitionName, int port, string userName, string password, string idClient, bool onlineVersion, bool retrieveStatistics)
         {
-            if (string.IsNullOrEmpty(partitionName) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(idClient))
+            if (string.IsNullOrEmpty(partitionName) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
             {
                 throw new PeaInvalidCredentialsException("Parameters of the PeaClient should not be either null or empty");
-            }
-
-            if (userName.Length > 10 || password.Length > 10)
-            {
-                this.ConnectionStatus = -1;
-                this.ConnectionMessage = "userName and/or password too long";
-                throw new PeaInvalidCredentialsException("user & password must be less than 10 characters");
             }
 
             PartitionName = partitionName;
@@ -113,7 +106,7 @@ namespace Peasys
             switch (ConnectionStatus)
             {
                 case 1:
-                    if(onlineVersion) SendStatistics(new ConnexionUpdate(userName, idClient, partitionName));
+                    if (onlineVersion) SendStatistics(new ConnexionUpdate(userName, idClient, partitionName));
                     ConnectionMessage = "Connected";
                     break;
                 case 2:
@@ -126,7 +119,7 @@ namespace Peasys
                     ConnectionMessage = "Invalid serial number/model";
                     throw new PeaInvalidCredentialsException("Invalid model or serial number");
                 case 5:
-                    ConnectionMessage = "Product expired";
+                    ConnectionMessage = "Invalid serial number/model";
                     throw new PeaConnexionException("Product expired");
                 default:
                     throw new PeaConnexionException("Exception during connexion process, contact us for more informations");
@@ -181,11 +174,21 @@ namespace Peasys
 
             string[] query_words = query.Split(' ');
 
-            Dictionary<string, ColumnInfo>? tb_schema = null;
+            Dictionary<string, ColumnInfo>? tb_schema = new Dictionary<string, ColumnInfo>();
             if (query_words[1].ToUpper() == "TABLE")
             {
                 string[] names = query_words[2].Split('/');
-                tb_schema = RetreiveTableSchema(names[1], names[0]);
+                string tb_query =
+                    "SELECT COLUMN_NAME, ORDINAL_POSITION, DATA_TYPE, LENGTH, NUMERIC_SCALE, IS_NULLABLE, IS_UPDATABLE, NUMERIC_PRECISION " +
+                    $"FROM QSYS2.SYSCOLUMNS WHERE SYSTEM_TABLE_NAME = '{names[1].ToUpper()}' AND SYSTEM_TABLE_SCHEMA = '{names[0].ToUpper()}'";
+
+                (Dictionary<String, List<dynamic>> result, _, int row_count, _, _) = BuildData(tb_query);
+                for (int i = 0; i < row_count; i++)
+                {
+                    tb_schema.Add(result["column_name"][i], new ColumnInfo(result["column_name"][i], result["ordinal_position"][i],
+                        result["data_type"][i], result["length"][i], result["numeric_scale"][i], result["is_nullable"][i], result["is_updatable"][i], result["numeric_precision"][i]));
+                }
+
             }
 
             return query_words[1].ToUpper() switch
@@ -226,12 +229,21 @@ namespace Peasys
 
             (_, string SqlState, string SqlMessage) = ModifyTable(query);
 
-            Dictionary<string, ColumnInfo>? tb_schema = null;
+            Dictionary<string, ColumnInfo>? tb_schema = new Dictionary<string, ColumnInfo>();
             if (retreiveTableSchema)
             {
                 string[] query_words = query.Split(' ');
                 string[] names = query_words[2].Split('/');
-                tb_schema = RetreiveTableSchema(names[1], names[0]);
+                string tb_query =
+                    "SELECT COLUMN_NAME, ORDINAL_POSITION, DATA_TYPE, LENGTH, NUMERIC_SCALE, IS_NULLABLE, IS_UPDATABLE, NUMERIC_PRECISION " +
+                    $"FROM QSYS2.SYSCOLUMNS WHERE SYSTEM_TABLE_NAME = '{names[1].ToUpper()}' AND SYSTEM_TABLE_SCHEMA = '{names[0].ToUpper()}'";
+
+                (Dictionary<String, List<dynamic>> result, _, int row_count, _, _) = BuildData(tb_query);
+                for (int i = 0; i < row_count; i++)
+                {
+                    tb_schema.Add(result["column_name"][i], new ColumnInfo(result["column_name"][i], result["ordinal_position"][i],
+                        result["data_type"][i], result["length"][i], result["numeric_scale"][i], result["is_nullable"][i], result["is_updatable"][i], result["numeric_precision"][i]));
+                }
             }
 
             return new PeaAlterResponse(SqlState == "00000", SqlMessage, SqlState, tb_schema);
@@ -283,7 +295,7 @@ namespace Peasys
         }
 
         /// <summary>
-        /// Sends a OS/400 command to the server and retreives the potential warning messages.
+        /// Sends an OS/400 command to the server and retreives the potential warning messages.
         /// </summary>
         /// <param name="command">The command that will be sent to the server.</param>
         /// <returns>Returns a <see cref="PeaCommandResponse"/> object, further used to exploit data.</returns>
@@ -479,7 +491,7 @@ namespace Peasys
 
             string SqlState = header.Substring(1, 5);
             string SqlMessage = header[6..].Trim();
-                
+
             if (RetrieveStatistics)
             {
                 SendStatistics(new DataUpdate("data_in", Asen.GetByteCount(query), IdClient, PartitionName));
@@ -524,7 +536,7 @@ namespace Peasys
         private Dictionary<string, ColumnInfo> RetreiveTableSchema(string table_name, string schema_name)
         {
             string query =
-                "SELECT COLUMN_NAME, ORDINAL_POSITION, DATA_TYPE, LENGTH, NUMERIC_SCALE, IS_NULLABLE, IS_UPDATABLE, LONG_COMMENT, NUMERIC_PRECISION " +
+                "SELECT COLUMN_NAME, ORDINAL_POSITION, DATA_TYPE, LENGTH, NUMERIC_SCALE, IS_NULLABLE, IS_UPDATABLE, NUMERIC_PRECISION " +
                 $"FROM QSYS2.SYSCOLUMNS WHERE SYSTEM_TABLE_NAME = '{table_name.ToUpper()}' AND SYSTEM_TABLE_SCHEMA = '{schema_name.ToUpper()}'";
 
             string header = RetreiveData("geth" + query + EndPack);
@@ -606,7 +618,7 @@ namespace Peasys
             Dictionary<string, ColumnInfo> tb_name = new Dictionary<string, ColumnInfo>();
             foreach (List<dynamic> list in result)
             {
-                tb_name.Add(list[0], new ColumnInfo(list[0], list[1], list[2], list[3], list[4], list[5], list[6], list[7], list[8]));
+                tb_name.Add(list[0], new ColumnInfo(list[0], list[1], list[2], list[3], list[4], list[5], list[6], list[7]));
             }
 
             return tb_name;

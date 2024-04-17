@@ -10,7 +10,7 @@
         public readonly string ReturnedSQLState;
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="PeaResponse"/> class.
+        /// Initializes a new instance of the <see cref="PeaResponse"/> class.
         /// </summary>
         /// <param name="hasSucceeded">Boolean set to true if the query has correctly been executed. Set to true if the SQL state is 00000.</param>
         /// <param name="returnedSQLMessage">SQL message return from the execution of the query.</param>
@@ -33,7 +33,7 @@
         public readonly Dictionary<string, ColumnInfo>? TableSchema;
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="PeaCreateResponse"/> class.
+        /// Initializes a new instance of the <see cref="PeaCreateResponse"/> class.
         /// </summary>
         /// <param name="hasSucceeded">Boolean set to true if the query has correctly been executed. Set to true if the SQL state is 00000.</param>
         /// <param name="returnedSQLMessage">SQL message return from the execution of the query.</param>
@@ -59,7 +59,7 @@
         public readonly Dictionary<string, ColumnInfo>? TableSchema;
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="PeaAlterResponse"/> class.
+        /// Initializes a new instance of the <see cref="PeaAlterResponse"/> class.
         /// </summary>
         /// <param name="hasSucceeded">Boolean set to true if the query has correctly been executed. Set to true if the SQL state is 00000.</param>
         /// <param name="returnedSQLMessage">SQL message return from the execution of the query.</param>
@@ -78,7 +78,7 @@
     public class PeaDropResponse : PeaResponse
     {
         /// <summary>
-        /// Initialize a new instance of the <see cref="PeaDropResponse"/> class.
+        /// Initializes a new instance of the <see cref="PeaDropResponse"/> class.
         /// </summary>
         /// <param name="hasSucceeded">Boolean set to true if the query has correctly been executed. Set to true if the SQL state is 00000.</param>
         /// <param name="returnedSQLMessage">SQL message return from the execution of the query.</param>
@@ -96,7 +96,7 @@
         public readonly string[] ColumnsName;
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="PeaSelectResponse"/> class.
+        /// Initializes a new instance of the <see cref="PeaSelectResponse"/> class.
         /// </summary>
         /// <param name="hasSucceeded">Boolean set to true if the query has correctly been executed. Set to true if the SQL state is 00000.</param>
         /// <param name="returnedSQLMessage">SQL message return from the execution of the query.</param>
@@ -121,7 +121,7 @@
         public readonly int RowCount;
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="PeaUpdateResponse"/> class.
+        /// Initializes a new instance of the <see cref="PeaUpdateResponse"/> class.
         /// </summary>
         /// <param name="hasSucceeded">Boolean set to true if the query has correctly been executed. Set to true if the SQL state is 00000.</param>
         /// <param name="returnedSQLMessage">SQL message return from the execution of the query.</param>
@@ -142,7 +142,7 @@
         public readonly int RowCount;
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="PeaDeleteResponse"/> class.
+        /// Initializes a new instance of the <see cref="PeaDeleteResponse"/> class.
         /// </summary>
         /// <param name="hasSucceeded">Boolean set to true if the query has correctly been executed. Set to true if the SQL state is 00000.</param>
         /// <param name="returnedSQLMessage">SQL message return from the execution of the query.</param>
@@ -163,7 +163,7 @@
         public readonly int RowCount;
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="PeaInsertResponse"/> class.
+        /// Initializes a new instance of the <see cref="PeaInsertResponse"/> class.
         /// </summary>
         /// <param name="hasSucceeded">Boolean set to true if the query has correctly been executed. Set to true if the SQL state is 00000.</param>
         /// <param name="returnedSQLMessage">SQL message return from the execution of the query.</param>
@@ -182,11 +182,11 @@
         public readonly List<string> Warnings;
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="PeaCommandResponse"/> class.
+        /// Initializes a new instance of the <see cref="PeaCommandResponse"/> class.
         /// </summary>
         /// <param name="HasSucceeded">Boolean set to true if the command has correctly been executed meaning that no CPFxxxx was return. Still, description messages can 
         /// be return along with CP*xxxx.</param>
-        /// <param name="Errors">List of warnings that results form the command execution. Errors are of the form : CP*xxxx Description of the warning.</param>
+        /// <param name="Errors">List of warnings that results from the command execution. Errors are of the form : CP*xxxx Description of the warning.</param>
         public PeaCommandResponse(bool HasSucceeded, List<string> Warnings)
         {
             this.HasSucceeded = HasSucceeded;
@@ -206,11 +206,10 @@
         public readonly int NumericScale;
         public readonly string IsNullable;
         public readonly string IsUpdatable;
-        public readonly string LongComment;
         public readonly int NumericPrecision;
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="ColumnInfo"/> class.
+        /// Initializes a new instance of the <see cref="ColumnInfo"/> class.
         /// </summary>
         /// <param name="columnName">Name of the column.</param> 
         /// <param name="ordinalPosition">Ordinal position of the column.</param>
@@ -219,10 +218,9 @@
         /// <param name="numericScale">Scale of the data contain in the column if numeric type.</param>
         /// <param name="isNullable">Y/N depending on the nullability of the field.</param>
         /// <param name="isUpdatable">Y/N depending on the updaptability of the field.</param>
-        /// <param name="longComment">Description of the column, maybe be empty.</param>
         /// <param name="numericPrecision">Precision of the data contain in the column if numeric type.</param>
         protected internal ColumnInfo(string columnName, int ordinalPosition, string dataType, int length, int numericScale, string isNullable,
-            string isUpdatable, string longComment, int numericPrecision)
+            string isUpdatable, int numericPrecision)
         {
             ColumnName = columnName;
             OrdinalPosition = ordinalPosition;
@@ -231,7 +229,6 @@
             NumericScale = numericScale;
             IsNullable = isNullable;
             IsUpdatable = isUpdatable;
-            LongComment = longComment;
             NumericPrecision = numericPrecision;
         }
     }
