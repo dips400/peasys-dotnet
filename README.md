@@ -1,6 +1,6 @@
 # Peasys dotnet
 
-[![NuGet](https://www.nuget.org/packages/Peasys)
+[NuGet](https://www.nuget.org/packages/Peasys)
 
 The official [Peasys](https://dips400.com/library) .NET library, supporting .NET Standard 8.0+
 
