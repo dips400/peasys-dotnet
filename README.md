@@ -1,9 +1,8 @@
 # Peasys dotnet
 
-[![NuGet]()
-[![Build Status]()
+[![NuGet](https://www.nuget.org/packages/Peasys)
 
-The official [Peasys][dips400] .NET library, supporting .NET Standard 6.0+
+The official [Peasys](https://dips400.com/library) .NET library, supporting .NET Standard 8.0+
 
 ## Installation
 
@@ -47,7 +46,7 @@ Peasys is a tool used along a license that should be found on the [dips400](http
 ### Connexion to the server
 
 ``` C#
-PeaClient conn = new PeaClient("PARITION_NAME", PORT, "USERNAME", "PASSWORD", "FUTUR_LICENSE_KEY");
+PeaClient conn = new PeaClient("DNS OR IP", PORT, "USERNAME", "PASSWORD", "ID_CLIENT", onlineVersion: true, retrieveStatistics: false);
 Console.WriteLine("Status de connexion : " + conn.ConnectionMessage);
 ```
 
@@ -73,21 +72,13 @@ conn.Disconnect();
 
 New features and bug fixes are released on the latest major version of the Peasys .NET client library. If you are on an older major version, we recommend that you upgrade to the latest in order to use the new features and bug fixes including those for security vulnerabilities. Older major versions of the package will continue to be available for use, but will not be receiving any updates.
 
-## Development
-
-Run all tests from the `src/PeasysTests` directory:
-
-```sh
-dotnet test
-```
-
 The library uses [`dotnet-format`](https://github.com/dotnet/format) for code formatting. Code
 must be formatted before PRs are submitted. Run the
 formatter with:
 
 ```sh
-dotnet format src/Peasys.sln
+dotnet format Peasys.sln
 ```
 
-For any requests, bug or comments, please [open an issue][issues] or [submit a
-pull request][pulls].
+For any requests, bug or comments, please open an issue or submit a
+pull request.
