@@ -14,6 +14,7 @@ namespace Peasys
     {
         public readonly string IdClient;
         public readonly string PartitionName;
+        public readonly string IpAdress;
         public readonly bool RetrieveStatistics;
         public readonly string UserName;
         public readonly int Port;
@@ -31,7 +32,8 @@ namespace Peasys
         /// <summary>
         /// Initialize a new instance of the <see cref="PeaClient"/> class. Initiates a connexion with the AS/400 server.
         /// </summary>
-        /// <param name="partitionName">DNS name (name of the partition) of the remote AS/400 server.</param>
+        /// <param name="ipAdress">IP adress or DNS name of the remote AS/400 server.</param>
+        /// <param name="partitionName">Name of the partition.</param>
         /// <param name="port">Port used for the data exchange between the client and the server.</param>
         /// <param name="userName">Username of the AS/400 profile used for connexion.</param>
         /// <param name="password">Password of the AS/400 profile used for connexion.</param>
@@ -40,13 +42,14 @@ namespace Peasys
         /// <param name="retrieveStatistics">Set to true if you want the statistics of the license key use to be collect.</param>
         /// <exception cref="PeaInvalidCredentialsException">Exception thrown when <param name="userName"> and/or <param name="password"> are wrong.</exception>
         /// <exception cref="PeaConnexionException">Exception thrown when the client was not able to successfully connect to the server.</exception>
-        public PeaClient(string partitionName, int port, string userName, string password, string idClient, bool onlineVersion, bool retrieveStatistics)
+        public PeaClient(string ipAdress, string partitionName, int port, string userName, string password, string idClient, bool onlineVersion, bool retrieveStatistics)
         {
             if (string.IsNullOrEmpty(partitionName) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
             {
                 throw new PeaInvalidCredentialsException("Parameters of the PeaClient should not be either null or empty");
             }
 
+            IpAdress = ipAdress;
             PartitionName = partitionName;
             Port = port;
             UserName = userName;
@@ -55,14 +58,14 @@ namespace Peasys
             RetrieveStatistics = retrieveStatistics;
 
             // retrieve connexion token online
-            string token = "pldgchjtsxlqyfucjstpldgchjcjstemzplfpldgchjtsxlqyfucjstemzplfutysnchqternoutysnchqternoemzplfutysnchqterno";
+            string token = "xqdsg27010wmca6052009050000000IDSP1tiupozxreybjhlk"; // default token in case of offline verification
             if (onlineVersion)
             {
                 try
                 {
                     httpClient = new()
                     {
-                        BaseAddress = new Uri("https://dips400.com"), // TO be changed when deployed
+                        BaseAddress = new Uri("https://dips400.com"),
                     };
 
                     using HttpResponseMessage response = httpClient.GetAsync($"api/license-key/retrieve-token/{partitionName}/{idClient}").Result;
@@ -70,23 +73,24 @@ namespace Peasys
                     var jsonResponse = response.Content.ReadAsStringAsync().Result;
 
                     JObject jsonObject = JObject.Parse(jsonResponse);
+
                     bool IsValid = (bool)jsonObject.GetValue("isValid");
                     token = (string)jsonObject.GetValue("token");
 
                     if (!IsValid)
                     {
-                        throw new PeaInvalidLicenseKeyException("Your subscription is not valid, visit TODO for more information.");
+                        throw new PeaInvalidLicenseKeyException("Your subscription is not valid, visit https://dips400.com/account/subscriptions for more information.");
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    throw new PeaConnexionException("Exception during license key check process", ex);
+                    // If dips400.com doesn't respond, let's try an affline verification with the offline token
                 }
             }
 
             try
             {
-                TcpClient.Connect(partitionName, port);
+                TcpClient.Connect(ipAdress, port);
                 Stream = TcpClient.GetStream();
             }
             catch (Exception ex)
@@ -94,7 +98,7 @@ namespace Peasys
                 throw new PeaConnexionException("Error connecting the TCP client", ex);
             }
 
-            string login = userName.PadRight(10) + token.PadRight(100) + password; // password padding to be redefined
+            string login = userName.PadRight(10) + token.PadRight(50) + password;
 
             byte[] ba = Asen.GetBytes(login);
             Stream.Write(ba, 0, ba.Length);
