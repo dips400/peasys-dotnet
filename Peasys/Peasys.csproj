@@ -19,11 +19,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\..\..\..\Downloads\LogoUnit (1).png">
+    <Compile Remove="PeaClient.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\..\..\..\..\Downloads\LogoUnit (1).png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Resource>
+    <Resource Include="PeaClient.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <None Include="..\LICENSE.txt">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
