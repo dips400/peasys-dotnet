@@ -23,11 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="..\..\..\..\..\..\Downloads\LogoUnit (1).png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
     <Resource Include="PeaClient.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
