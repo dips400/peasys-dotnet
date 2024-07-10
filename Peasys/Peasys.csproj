@@ -19,10 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="PeaClient.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Resource Include="PeaClient.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>

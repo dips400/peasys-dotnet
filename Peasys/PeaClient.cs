@@ -106,25 +106,45 @@ namespace Peasys
             byte[] bb = new byte[1];
             _ = Stream.Read(bb, 0, 1);
 
-            ConnectionStatus = int.Parse(Encoding.UTF8.GetString(bb));
-            switch (ConnectionStatus)
+            string returnValue = Encoding.UTF8.GetString(bb);
+            switch (returnValue)
             {
-                case 1:
+                case "1":
                     if (onlineVersion) SendStatistics(new ConnexionUpdate(userName, idClient, partitionName));
+                    ConnectionStatus = 1;
                     ConnectionMessage = "Connected";
                     break;
-                case 2:
-                    ConnectionMessage = "Unable to set profile";
-                    throw new PeaConnexionException("Unable to set profile");
-                case 3:
-                    ConnectionMessage = "Invalid credential";
-                    throw new PeaInvalidCredentialsException("Invalid userName or password, check again");
-                case 4:
-                    ConnectionMessage = "Invalid serial number/model";
-                    throw new PeaInvalidCredentialsException("Invalid model or serial number");
-                case 5:
-                    ConnectionMessage = "Invalid serial number/model";
-                    throw new PeaConnexionException("Product expired");
+                case "2":
+                    ConnectionStatus = 2;
+                    ConnectionMessage = "Unable to set profile, check profile validity.";
+                    throw new PeaConnexionException("Unable to set profile, check profile validity.");
+                case "3":
+                    ConnectionStatus = 3;
+                    ConnectionMessage = "Invalid credentials.";
+                    throw new PeaInvalidCredentialsException("Invalid username or password, check again.");
+                case "B":
+                    ConnectionStatus = 5;
+                    ConnectionMessage = "Peasys Online : your token connexion is no longer valid, retry to connect.";
+                    throw new PeaConnexionException("Peasys Online : your token connexion is no longer valid, retry to connect.");
+                case "D":
+                    ConnectionStatus = 6;
+                    ConnectionMessage = "Peasys Online : the partition name you provided doesn't match the actual name of the machine.";
+                    throw new PeaConnexionException("Peasys Online : the partition name you provided doesn't match the actual name of the machine.");
+                case "E":
+                    ConnectionStatus = 7;
+                    ConnectionMessage = "You reached the max number of simultaneously connected peasys users for that partition and license key. Contact us for upgrading your license.";
+                    throw new PeaInvalidLicenseKeyException("You reached the max number of simultaneously connected peasys users for that partition and license key. Contact us for upgrading your license.");
+                case "F":
+                    ConnectionStatus = 8;
+                    ConnectionMessage = "Your license is no longer valid. Subscribe to another license in order to continue using Peasys.";
+                    throw new PeaInvalidLicenseKeyException("Your license is no longer valid. Subscribe to another license in order to continue using Peasys.");
+                case "0":
+                case "A":
+                case "C":
+                case "G":
+                    ConnectionStatus = -1;
+                    ConnectionMessage = "Error linked to DIPS source code. Please, contact us immediatly to fix the issue.";
+                    throw new PeaConnexionException("Error linked to DIPS source code. Please, contact us immediatly to fix the issue.");
                 default:
                     throw new PeaConnexionException("Exception during connexion process, contact us for more informations");
             }
