@@ -82,8 +82,12 @@ namespace Peasys
                         throw new PeaInvalidLicenseKeyException("Your subscription is not valid, visit https://dips400.com/account/subscriptions for more information.");
                     }
                 }
-                catch
+                catch (Exception e)
                 {
+                    if (e is PeaInvalidLicenseKeyException)
+                    {
+                        throw;
+                    }
                     // If dips400.com doesn't respond, let's try an affline verification with the offline token
                 }
             }
@@ -138,7 +142,7 @@ namespace Peasys
                     ConnectionStatus = 8;
                     ConnectionMessage = "Your license is no longer valid. Subscribe to another license in order to continue using Peasys.";
                     throw new PeaInvalidLicenseKeyException("Your license is no longer valid. Subscribe to another license in order to continue using Peasys.");
-                case "0":
+                case "0": 
                 case "A":
                 case "C":
                 case "G":
