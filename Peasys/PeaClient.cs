@@ -44,7 +44,7 @@ namespace Peasys
         /// <exception cref="PeaConnexionException">Exception thrown when the client was not able to successfully connect to the server.</exception>
         public PeaClient(string ipAdress, string partitionName, int port, string userName, string password, string idClient, bool onlineVersion, bool retrieveStatistics)
         {
-            if (string.IsNullOrEmpty(partitionName) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(ipAdress) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
             {
                 throw new PeaInvalidCredentialsException("Parameters of the PeaClient should not be either null or empty");
             }

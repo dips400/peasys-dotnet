@@ -22,6 +22,7 @@
     <None Include="..\..\..\..\..\..\Downloads\LogoUnit (1).png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\LICENSE.txt">
       <Pack>True</Pack>
