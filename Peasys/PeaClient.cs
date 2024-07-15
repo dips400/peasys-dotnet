@@ -336,14 +336,13 @@ namespace Peasys
 
             string result_raw = RetreiveData(customCmd);
             List<string> result = new();
-            bool hasSucceeded = true;
             try
             {
                 Regex rx = new("C[A-Z]{2}[0-9]{4}");
                 foreach (Match match in rx.Matches(result_raw).Cast<Match>())
                 {
 
-                    if (!match.ToString().StartsWith("CPI"))
+                    if (!match.ToString().StartsWith("CPI") && match.Index + descriptionOffset < result_raw.Length)
                     {
                         string description = result_raw.Substring(match.Index + descriptionOffset, result_raw.Length - match.Index - descriptionOffset);
                         description = description[..description.IndexOf('.')];
@@ -352,16 +351,12 @@ namespace Peasys
                         result.Add(match + " " + description);
                     }
 
-                    if (match.ToString().StartsWith("CPF"))
-                    {
-                        hasSucceeded = false;
-                    }
                 }
-                return new PeaCommandResponse(hasSucceeded, result);
+                return new PeaCommandResponse(result);
             }
             catch (Exception)
             {
-                return new(false, new());
+                return new([]);
             }
         }
 
@@ -370,11 +365,8 @@ namespace Peasys
         /// </summary>
         public void Disconnect()
         {
-            // use pea_deconnect
-            // command to indiate end of connection to the server
             string end_block = "stopdipsjbiemg";
 
-            // change command to byte array, send to server and cloe the TCP client
             byte[] ba = Asen.GetBytes(end_block);
             if (Stream != null)
             {
@@ -626,7 +618,6 @@ namespace Peasys
                     int scale = int.Parse(list_scal[m].ToString());
                     int precision = int.Parse(list_prec[m].ToString());
                     int type = int.Parse(list_type[m].ToString());
-                    // TODO add VARCHAR & VARGRAPHIC
                     // int
                     if (type == 496 || type == 497)
                     {

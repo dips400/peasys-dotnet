@@ -178,7 +178,6 @@
     /// </summary>
     public class PeaCommandResponse
     {
-        public readonly bool HasSucceeded;
         public readonly List<string> Warnings;
 
         /// <summary>
@@ -187,9 +186,8 @@
         /// <param name="HasSucceeded">Boolean set to true if the command has correctly been executed meaning that no CPFxxxx was return. Still, description messages can 
         /// be return along with CP*xxxx.</param>
         /// <param name="Errors">List of warnings that results from the command execution. Errors are of the form : CP*xxxx Description of the warning.</param>
-        public PeaCommandResponse(bool HasSucceeded, List<string> Warnings)
+        public PeaCommandResponse(List<string> Warnings)
         {
-            this.HasSucceeded = HasSucceeded;
             this.Warnings = Warnings;
         }
     }
