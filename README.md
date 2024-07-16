@@ -46,7 +46,7 @@ Peasys is a tool used along a license that should be found on the [dips400](http
 ### Connexion to the server
 
 ``` C#
-PeaClient conn = new PeaClient("DNS OR IP", PORT, "USERNAME", "PASSWORD", "ID_CLIENT", onlineVersion: true, retrieveStatistics: false);
+PeaClient conn = new PeaClient("DNS OR IP", "PARTITION_NAME", PORT, "USERNAME", "PASSWORD", "ID_CLIENT", onlineVersion: true, retrieveStatistics: false);
 Console.WriteLine("Status de connexion : " + conn.ConnectionMessage);
 ```
 
